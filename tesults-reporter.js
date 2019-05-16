@@ -44,7 +44,7 @@ function caseFiles (suite, name) {
   return files;
 }
 
-function tesultsReporter(runner) {
+function tesultsReporter(runner, options) {
   mocha.reporters.Base.call(this, runner);
 
   runner.on('start', function () {
@@ -71,6 +71,32 @@ function tesultsReporter(runner) {
         args[buildReasonKey] = val.substr(buildReasonKey.length + 1);
       }
     });
+
+    if (options !== undefined && options !== null) {
+        if (options.reporterOptions !== undefined && options.reporterOptions !== null) {
+            if (args[targetKey] === undefined) {
+                args[targetKey] = options.reporterOptions[targetKey];
+            }
+            if (args[filesKey] === undefined) {
+                args[filesKey] = options.reporterOptions[filesKey];
+            }
+            if (args[configKey] === undefined) {
+                args[configKey] = options.reporterOptions[configKey];
+            }
+            if (args[buildNameKey] === undefined) {
+                args[buildNameKey] = options.reporterOptions[buildNameKey];
+            }
+            if (args[buildDescKey] === undefined) {
+                args[buildDescKey] = options.reporterOptions[buildDescKey];
+            }
+            if (args[buildReasonKey] === undefined) {
+                args[buildReasonKey] = options.reporterOptions[buildReasonKey];
+            }
+            if (args[buildResultKey] === undefined) {
+                args[buildResultKey] = options.reporterOptions[buildResultKey];
+            }
+        }
+    }
 
     if (args[targetKey] === undefined) {
       console.log(targetKey + " not provided. Tesults disabled.");

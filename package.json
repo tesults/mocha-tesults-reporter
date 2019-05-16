@@ -1,6 +1,6 @@
 {
   "name": "mocha-tesults-reporter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tesults reporter for Mocha",
   "main": "tesults-reporter.js",
   "scripts": {
