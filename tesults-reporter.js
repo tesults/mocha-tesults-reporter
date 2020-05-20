@@ -12,6 +12,8 @@ let data = {
   }
 };
 
+let startTimes = {};
+
 let args = {};
 let disabled = false;
 
@@ -142,6 +144,13 @@ function tesultsReporter(runner, options) {
     }
   });
 
+  runner.on('test', function(test) {
+    if (disabled === true) {
+      return;
+    }
+    startTimes[test.fullTitle()] = Date.now();
+  });
+
   runner.on('test end', function(test) {
     if (disabled === true) {
       return;
@@ -161,6 +170,8 @@ function tesultsReporter(runner, options) {
     if (files.length > 0) {
       testCase.files = files;
     }
+    testCase.start = startTimes[test.fullTitle()];
+    testCase.end = Date.now();
     data.results.cases.push(testCase);
   });
 
