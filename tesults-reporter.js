@@ -162,7 +162,13 @@ function tesultsReporter(runner, options) {
       testCase.result = "pass";
     } else if (test.state === "failed") {
       testCase.result = "fail";
-      testCase.reason = test.err;
+      if (test.err !== undefined) {
+        if (test.err.message !== undefined) {
+          testCase.reason = test.err.message;
+        } else {
+          testCase.reason = test.err;
+        }
+      }
     } else {
       testCase.result = "unknown";
     }
