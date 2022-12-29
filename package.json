@@ -1,6 +1,6 @@
 {
   "name": "mocha-tesults-reporter",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Tesults reporter for Mocha",
   "main": "tesults-reporter.js",
   "scripts": {
@@ -36,6 +36,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "tesults": "^1.1.1"
+    "tesults": "^1.1.3"
   }
 }

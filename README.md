@@ -16,4 +16,4 @@ Mocha specific documentation: https://www.tesults.com/docs?doc=mocha.
 
 ## Support
 
-support@tesults.com
+help@tesults.com

@@ -9,6 +9,11 @@ let data = {
   target: 'token',
   results: {
     cases: []
+  },
+  metadata: {
+    integration_name: "mocha-tesults-reporter",
+    integration_version: "1.2.0",
+    test_framework: "mocha"
   }
 };
 
@@ -172,6 +177,7 @@ function tesultsReporter(runner, options) {
     } else {
       testCase.result = "unknown";
     }
+    testCase.rawResult = test.state;
     let files = caseFiles(testCase.suite, testCase.name);
     if (files.length > 0) {
       testCase.files = files;
