@@ -12,7 +12,7 @@ let data = {
   },
   metadata: {
     integration_name: "mocha-tesults-reporter",
-    integration_version: "1.2.0",
+    integration_version: "1.3.0",
     test_framework: "mocha"
   }
 };
@@ -29,6 +29,34 @@ const buildNameKey = "tesults-build-name";
 const buildDescKey = "tesults-build-desc";
 const buildResultKey = "tesults-build-result";
 const buildReasonKey = "tesults-build-reason";
+
+
+//const supplementalDataFile = "tesults-supplemental-data-file.json"
+
+let supplementalData = {}
+
+//const supplementalDataFile = "tesults-supplemental-data-file.json"
+
+const getSupplementalData = () => {
+    try {
+        //let dataString = fs.readFileSync(supplementalDataFile, {encoding: 'utf8'})
+        //return JSON.parse(dataString)
+        return supplementalData
+    } catch (err) {
+        console.log("tesults-reporter error getting supplemental data: " + err)
+        return {}
+    }
+}
+
+const setSupplementalData = (data) => {
+    try {
+        //let fileContents = JSON.stringify(data)
+        //fs.writeFileSync(supplementalDataFile, fileContents)
+        supplementalData = data
+    } catch (err) {
+        console.log("tesults-reporter error saving supplemental data: " + err)
+    }
+}
 
 function caseFiles (suite, name) {
   let files = [];
@@ -184,6 +212,56 @@ function tesultsReporter(runner, options) {
     }
     testCase.start = startTimes[test.fullTitle()];
     testCase.end = Date.now();
+
+    // Add supplemental data
+    try {
+      const key = test.fullTitle()
+      const supplemental = getSupplementalData()
+      const data = supplemental[key]
+      if (data !== undefined) {
+        // files
+        if (data.files !== undefined) {
+            data.files = [...new Set(data.files)]
+  
+            if (testCase.files === undefined) {
+                testCase.files = data.files
+            } else {
+                for (let f = 0; f < data.files.length; f++) {
+                    testCase.files.push(data.files[f])
+                }
+            }
+        }
+        // desc
+        testCase.desc = data.desc
+        // steps
+        if (data.steps !== undefined) {
+            let cleaned_steps = []
+            for (let s = 0; s < data.steps.length; s++) {
+                let step = data.steps[s]
+                if (cleaned_steps.length > 0) {
+                    let last_step = cleaned_steps[cleaned_steps.length - 1]
+                    if (step.name === last_step.name && step.result === last_step.result) {
+                        // Do not add repeated step
+                    } else {
+                        cleaned_steps.push(step)
+                    }
+                } else {
+                    cleaned_steps.push(step)
+                }
+            }
+            testCase.steps = cleaned_steps
+        }
+        // custom
+        Object.keys(data).forEach((key) => {
+            if (key.startsWith("_")) {
+                testCase[key] = data[key]
+            }
+        })
+      }
+    } catch (err) {
+      // Swallow supplement data error
+    }
+    
     data.results.cases.push(testCase);
   });
 
@@ -239,3 +317,75 @@ function tesultsReporter(runner, options) {
 
 // To have this reporter "extend" a built-in reporter uncomment the following line:
 // mocha.utils.inherits(MyReporter, mocha.reporters.Spec);
+
+module.exports.file = (test, path) => {
+  if (test === undefined) {
+      return
+  }
+
+  let supplemental = getSupplementalData()
+  const key = test.fullTitle()
+  if (supplemental[key] === undefined) {
+      supplemental[key] = { files: [path]}
+  } else {
+      let data = supplemental[key]
+      if (data.files === undefined) {
+          data.files = [path]
+      } else {
+          data.files.push(path)
+      }
+      supplemental[key] = data
+  }
+  setSupplementalData(supplemental)
+}
+
+module.exports.custom = (test, name, value) => {
+  if (test === undefined) {
+      return
+  }
+
+  let supplemental = getSupplementalData()
+  const key = test.fullTitle()
+  if (supplemental[key] === undefined) {
+      supplemental[key] = {}
+  }
+  supplemental[key]["_" + name] = value
+  setSupplementalData(supplemental)
+}
+
+module.exports.description = (test, value) => {
+  if (test === undefined) {
+      return
+  }
+  let supplemental = getSupplementalData()
+  const key = test.fullTitle()
+  if (supplemental[key] === undefined) {
+      supplemental[key] = {}
+  }
+  supplemental[key]["desc"] = value
+  setSupplementalData(supplemental)
+}
+
+module.exports.step =  (test, step) => {
+  if (test === undefined || step === undefined) {
+      return
+  }
+  if (step.description !== undefined) {
+      step.desc = step.description
+      delete step.description
+  }
+  let supplemental = getSupplementalData()
+  const key = test.fullTitle()
+  if (supplemental[key] === undefined) {
+      supplemental[key] = { steps: [step] }
+  } else {
+      if (supplemental[key]["steps"] === undefined) {
+          supplemental[key]["steps"] = [step]
+      } else {
+          let steps = supplemental[key]["steps"]
+          steps.push(step)
+          supplemental[key]["steps"] = steps
+      }
+  }
+  setSupplementalData(supplemental)
+}
