@@ -201,6 +201,7 @@ function tesultsReporter(runner, options) {
         } else {
           testCase.reason = test.err;
         }
+        testCase["_Stack trace"] = test.err.stack;
       }
     } else {
       testCase.result = "unknown";
